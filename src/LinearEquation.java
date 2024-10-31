@@ -2,8 +2,6 @@ public class LinearEquation {
     private int x1, y1, x2, y2;
 
 
-
-
     public LinearEquation(int x1, int y1, int x2, int y2) {
         this.x1 = x1;
         this.y1 = y1;
@@ -12,74 +10,57 @@ public class LinearEquation {
     }
 
 
-
-
     public double distance() {
-        return Math.round(Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)) * 100.0) / 100.0;
+        return roundedToHundredth(Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)));
     }
-
-
 
 
     public double yIntercept() {
-        double slope = slope();
-        return y1 - slope * x1;
-
-
+        return roundedToHundredth(y1 - slope() * x1);
     }
-
-
 
 
     public double slope() {
-        if (isVertical()) {
-            throw new ArithmeticException("It's a vertical line.");
-
-
+        if (x1 == x2) {
+            return Double.NaN;
         }
-        return Math.round((double)(y2 - y1) / (x2 - x1)* 100.0) /100.0;
-
-
-
-
+        return roundedToHundredth((double) (y2 - y1) / (x2 - x1));
     }
-
-
 
 
     public String equation() {
-        if (isVertical()) {
-            return "x = " + x1;
-        }
+            if (x1 == x2) {
+                return "x = " + x1;
+            }
+            if (y1 == y2){
+                return "y = " + y1;
+            }
 
+            double m = slope();
+            double b = yIntercept();
 
+            String slopeString = formatSlope(m);
+            String interceptString = (b == 0) ? "" : (b > 0 ? " + " : " - ") + Math.abs(b);
 
-
-        double m = slope();
-        double b = yIntercept();
-
-
-        if (m == 0) {
-            return "y = " + String.format("%.2f", b);
-        } else {
-            String slopeStr = String.format("%.2f", m);
-            String interceptStr = String.format("%.2f", b);
-            return "y = " + slopeStr + "x + " + interceptStr;
-        }
+            String equation = "y = " + (m == 0 ? interceptString.trim() : slopeString + "x" + interceptString);
+            return equation.trim();
     }
 
 
+    public String coordinateForX(double x) {
+        double y = slope() * x + yIntercept();
+        return "(" + roundedToHundredth(x) + ", " + roundedToHundredth(y) + ")";
+    }
 
 
     public String lineInfo() {
-        return  "\n"+"The two points are: "+"("+x1+", "+y1+")" + " "+"("+x2+", "+y2+")"+"\n"+
-                "The distance between the two points is: " + distance() + "\n" +
-                "The slope of the line is: " + (isVertical() ? "undefined, it's a vertical line." : slope()) + "\n" +
-                "The Y-Intercept of the line is: " + (isVertical() ? "undefined, it's a vertical line." : yIntercept()) + "\n" +
-                "The equation of the line is: " + equation()+"\n";
+        String lineInfo = "\n"+"The two points are: (" + x1 + ", " + y1 + ") and (" + x2 + ", " + y2 + ")\n";
+        lineInfo += "The equation of the line between these points is: " + equation() + "\n";
+        lineInfo += "The y-intercept of this line is: " + yIntercept() + "\n";
+        lineInfo += "The slope of this line is: " + slope() + "\n";
+        lineInfo += "The distance between these points is: " + distance();
+        return lineInfo;
     }
-
-
 
 
     public boolean isVertical() {
@@ -87,15 +68,65 @@ public class LinearEquation {
     }
 
 
+    private double roundedToHundredth(double toRound) {
+        return Math.round(toRound * 100.0) / 100.0;
+    }
 
 
-    public String coordinateForX(double x) {
-        if (isVertical()) {
-            return "undefined, it's a vertical line.";
+    private String formatSlope(double m) {
+        if (m == 0) {
+            return "";
         }
-        double y = slope() * x + yIntercept();
-        return String.format("(%s, %.2f)", x, y);
+
+
+
+
+        int numerator = (int) (y2 - y1);
+        int denominator = (int) (x2 - x1);
+
+
+
+
+        if (denominator < 0) {
+            numerator = -numerator;
+            denominator = -denominator;
+        }
+
+
+        // Simplify the fraction
+        int gcd = gcd(Math.abs(numerator), Math.abs(denominator));
+        numerator /= gcd;
+        denominator /= gcd;
+
+
+
+
+        String fraction = numerator + "/" + denominator;
+
+
+
+
+        if (m == 1) {
+            return "";
+        } else if (m == -1) {
+            return "-";
+        }
+
+
+        return fraction;
+    }
+
+
+    private int gcd(int a, int b) {
+        if (b == 0) {
+            return a;
+        }
+        return gcd(b, a % b);
     }
 }
+
+
+
+
 
 
